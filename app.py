@@ -274,20 +274,37 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6. TOP NAVIGATION PILLS
+# 6. TOP NAVIGATION WITH PERSISTENT QUERY PARAMETERS
 # -----------------------------------------------------------------------------
+stages = [
+    "0. A1 Foundations & Strategy",
+    "1. Hören (Voicemail & Audio)",
+    "2. Lesen (Ad Matching)",
+    "3. Schreiben (Form & Email)",
+    "4. Sprechen (Voice AI)",
+    "5. Final Scorecard & Audit"
+]
+
+# Read active stage from URL query params (prevents reset on refresh)
+query_params = st.query_params
+default_index = 0
+if "stage" in query_params:
+    try:
+        default_index = int(query_params["stage"])
+        if default_index < 0 or default_index >= len(stages):
+            default_index = 0
+    except ValueError:
+        default_index = 0
+
 module = st.radio(
     "Select Stage:",
-    [
-        "0. A1 Foundations & Strategy",
-        "1. Hören (Voicemail & Audio)",
-        "2. Lesen (Ad Matching)",
-        "3. Schreiben (Form & Email)",
-        "4. Sprechen (Voice AI)",
-        "5. Final Scorecard & Audit"
-    ],
+    stages,
+    index=default_index,
     horizontal=True
 )
+
+# Update URL query param to reflect user selection
+st.query_params["stage"] = stages.index(module)
 
 st.divider()
 
@@ -348,14 +365,14 @@ if module == "0. A1 Foundations & Strategy":
         c1, c2 = st.columns(2)
         with c1:
             st.markdown("""
-            * <div class="tooltip-de">Wann?<span class="tooltip-text">When? (Targets dates, days, clock times)</span></div> $\rightarrow$ e.g., *Am Dienstag, um 14 Uhr*
-            * <div class="tooltip-de">Wo? / Wohin?<span class="tooltip-text">Where? / Where to? (Targets locations & street names)</span></div> $\rightarrow$ e.g., *In Berlin, Bernergasse 12*
-            * <div class="tooltip-de">Wer? / Mit wem?<span class="tooltip-text">Who? / With whom? (Targets people & family members)</span></div> $\rightarrow$ e.g., *Mein Bruder, Frau Meyer*
+- <div class="tooltip-de">Wann?<span class="tooltip-text">When? (Targets dates, days, clock times)</span></div> -> e.g., *Am Dienstag, um 14 Uhr*
+- <div class="tooltip-de">Wo? / Wohin?<span class="tooltip-text">Where? / Where to? (Targets locations & street names)</span></div> -> e.g., *In Berlin, Bernergasse 12*
+- <div class="tooltip-de">Wer? / Mit wem?<span class="tooltip-text">Who? / With whom? (Targets people & family members)</span></div> -> e.g., *Mein Bruder, Frau Meyer*
             """, unsafe_allow_html=True)
         with c2:
             st.markdown("""
-            * <div class="tooltip-de">Wie viel? / Wie lange?<span class="tooltip-text">How much? / How long? (Targets prices & durations)</span></div> $\rightarrow$ e.g., *30 Euro, drei Tage*
-            * <div class="tooltip-de">Warum?<span class="tooltip-text">Why? (Targets reasons & causes)</span></div> $\rightarrow$ e.g., *Wegen dem Auto*
+- <div class="tooltip-de">Wie viel? / Wie lange?<span class="tooltip-text">How much? / How long? (Targets prices & durations)</span></div> -> e.g., *30 Euro, drei Tage*
+- <div class="tooltip-de">Warum?<span class="tooltip-text">Why? (Targets reasons & causes)</span></div> -> e.g., *Wegen dem Auto*
             """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -457,9 +474,10 @@ elif module == "1. Hören (Voicemail & Audio)":
         ans_time = st.text_input("Uhrzeit / Meeting Time:")
 
     with col_v:
+        st.caption("📌 **Instruction:** Click the microphone to start, then click the **Stop (Square)** button when finished speaking.")
         user_audio = st.audio_input("Record voice response:")
         if user_audio:
-            st.success("🎤 Audio captured!")
+            st.success("🎤 Audio response captured and stored in buffer!")
 
     if st.button("Evaluate Hören Task"):
         score = 0
@@ -484,18 +502,18 @@ elif module == "2. Lesen (Ad Matching)":
     with col_sit:
         st.markdown("### Situations (Situationen)")
         st.markdown("""
-        * **A:** Sie möchten <div class="tooltip-de">billig im Ausland telefonieren<span class="tooltip-text">make cheap international phone calls</span></div>.
-        * **B:** Sie suchen einen <div class="tooltip-de">Job im Büro als Sekretär/in<span class="tooltip-text">job in an office as a secretary</span></div>.
-        * **C:** Sie brauchen <div class="tooltip-de">Hilfe bei der Hausarbeit<span class="tooltip-text">help with housework / cleaning</span></div>.
+- **A:** Sie möchten <div class="tooltip-de">billig im Ausland telefonieren<span class="tooltip-text">make cheap international phone calls</span></div>.
+- **B:** Sie suchen einen <div class="tooltip-de">Job im Büro als Sekretär/in<span class="tooltip-text">job in an office as a secretary</span></div>.
+- **C:** Sie brauchen <div class="tooltip-de">Hilfe bei der Hausarbeit<span class="tooltip-text">help with housework / cleaning</span></div>.
         """, unsafe_allow_html=True)
 
     with col_ad:
         st.markdown("### Advertisements (Anzeigen)")
         st.markdown("""
-        * **Anzeige 1:** Personalvermittlung - <div class="tooltip-de">Sekretärin gesucht<span class="tooltip-text">Secretary wanted (Full-time)</span></div>.
-        * **Anzeige 2:** Fitnesscenter Olymp - <div class="tooltip-de">Geräte & Rückengymnastik<span class="tooltip-text">Gym equipment & back exercises</span></div>.
-        * **Anzeige 4:** weltweitanrufen.de - <div class="tooltip-de">Günstige Auslandsanrufe<span class="tooltip-text">Cheap international calls from 1.9 cents</span></div>.
-        * **Anzeige 5:** Petra Maier - <div class="tooltip-de">Hilfe bei Wäsche, Bügeln und Saubermachen<span class="tooltip-text">Help with laundry, ironing, and cleaning</span></div>.
+- **Anzeige 1:** Personalvermittlung - <div class="tooltip-de">Sekretärin gesucht<span class="tooltip-text">Secretary wanted (Full-time)</span></div>.
+- **Anzeige 2:** Fitnesscenter Olymp - <div class="tooltip-de">Geräte & Rückengymnastik<span class="tooltip-text">Gym equipment & back exercises</span></div>.
+- **Anzeige 4:** weltweitanrufen.de - <div class="tooltip-de">Günstige Auslandsanrufe<span class="tooltip-text">Cheap international calls from 1.9 cents</span></div>.
+- **Anzeige 5:** Petra Maier - <div class="tooltip-de">Hilfe bei Wäsche, Bügeln und Saubermachen<span class="tooltip-text">Help with laundry, ironing, and cleaning</span></div>.
         """, unsafe_allow_html=True)
 
     ans_a = st.selectbox("Ad for Situation A:", ["-- Select --", "Anzeige 1", "Anzeige 2", "Anzeige 4", "Anzeige 5"])
@@ -583,10 +601,11 @@ elif module == "4. Sprechen (Voice AI)":
         </div>
         """, unsafe_allow_html=True)
 
+        st.caption("📌 **Instruction:** Click the microphone to start, then click the **Stop (Square)** button when finished speaking.")
         v_rec = st.audio_input("Record your spoken response:")
         if v_rec:
             st.audio(v_rec)
-            st.info("🎤 Audio response captured!")
+            st.success("🎤 Audio response captured and ready for processing!")
 
         sample_text = "Ich heiße Daniel. Ich spreche Englisch und Deutsch. Ich bin Forscher von Beruf."
         st.markdown("""
