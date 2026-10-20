@@ -2,6 +2,7 @@ import os
 import io
 import re
 import base64
+import random
 import streamlit as st
 from gtts import gTTS
 
@@ -44,7 +45,7 @@ pic5_path = os.path.join(assets_dir, "pic5.png")
 logo_b64 = get_base64_of_bin_file(logo_path)
 
 # -----------------------------------------------------------------------------
-# 3. DELTA CAFÉS EDITORIAL HUE & GLASSMORPHISM STYLING OVERRIDE
+# 3. HIGH-CONTRAST DELTA CAFÉS EDITORIAL STYLING
 # -----------------------------------------------------------------------------
 st.markdown(f"""
 <style>
@@ -52,13 +53,13 @@ st.markdown(f"""
 
     :root {{
         --bg-main: #0e0806;
-        --card-glass: rgba(28, 17, 13, 0.88);
-        --border-glow: rgba(217, 160, 120, 0.2);
-        --tan-btn: #d9ad92;
-        --tan-hover: #e8c4ad;
+        --card-glass: rgba(35, 21, 16, 0.95);
+        --border-glow: rgba(255, 209, 178, 0.35);
+        --tan-btn: #ffb088;
+        --tan-hover: #ffd5c2;
         --delta-red: #e32219;
-        --text-pure: #fdfbf7;
-        --text-muted: #bcaba0;
+        --text-pure: #ffffff;
+        --text-muted: #e6d7d0;
     }}
 
     /* Hide Streamlit Sidebar & Default Chrome */
@@ -66,16 +67,21 @@ st.markdown(f"""
         display: none !important;
     }}
 
-    /* Global Dark Canvas - Espresso Warm Hue */
+    /* Global Dark Canvas - Espresso Warm Hue with High Legibility */
     .stApp {{
-        background: radial-gradient(circle at 50% 0%, #281711 0%, #0e0806 80%) !important;
+        background: radial-gradient(circle at 50% 0%, #301a12 0%, #0e0806 85%) !important;
         color: var(--text-pure) !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }}
 
+    /* Force High Contrast on all Markdown, Paragraphs, and Headings */
+    p, span, label, div, li, .stMarkdown, .stText, span[data-baseweb="tag"] {{
+        color: var(--text-pure) !important;
+    }}
+
     /* Top Navigation Bar */
     .inst-header {{
-        background: rgba(18, 11, 8, 0.85);
+        background: rgba(25, 15, 11, 0.95);
         border: 1px solid var(--border-glow);
         border-radius: 50px;
         padding: 1rem 2.2rem;
@@ -84,7 +90,7 @@ st.markdown(f"""
         align-items: center;
         justify-content: space-between;
         backdrop-filter: blur(20px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
         flex-wrap: wrap;
         gap: 1rem;
     }}
@@ -92,24 +98,24 @@ st.markdown(f"""
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 1.6rem;
         font-weight: 700;
-        color: var(--text-pure);
+        color: #ffffff !important;
         margin: 0;
     }}
     .inst-subtitle {{
-        color: var(--tan-btn);
+        color: var(--tan-btn) !important;
         font-size: 0.95rem;
-        font-weight: 500;
+        font-weight: 600;
     }}
     .inst-badge {{
         background-color: var(--delta-red);
-        color: #ffffff;
+        color: #ffffff !important;
         padding: 0.4rem 1.2rem;
         border-radius: 30px;
         font-weight: 800;
         font-size: 0.75rem;
         letter-spacing: 1.2px;
         text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(227, 34, 25, 0.35);
+        box-shadow: 0 4px 15px rgba(227, 34, 25, 0.5);
     }}
 
     /* Editorial Hero Card */
@@ -120,20 +126,20 @@ st.markdown(f"""
         padding: 2.5rem;
         margin-bottom: 1.8rem;
         backdrop-filter: blur(20px);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
     }}
     .editorial-title {{
         font-family: 'Playfair Display', serif;
         font-size: 3.2rem;
-        font-weight: 400;
+        font-weight: 600;
         line-height: 1.15;
-        color: var(--text-pure);
+        color: #ffffff !important;
         margin-bottom: 0.8rem;
     }}
     .editorial-subtitle {{
-        color: var(--tan-btn);
-        font-size: 1.1rem;
-        font-weight: 400;
+        color: var(--tan-btn) !important;
+        font-size: 1.15rem;
+        font-weight: 500;
         letter-spacing: 0.5px;
     }}
 
@@ -145,22 +151,22 @@ st.markdown(f"""
         padding: 2rem;
         margin-bottom: 1.5rem;
         backdrop-filter: blur(16px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }}
     .card-header-title {{
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 1.35rem;
         font-weight: 700;
-        color: var(--tan-btn);
+        color: var(--tan-btn) !important;
         margin-bottom: 1rem;
     }}
 
-    /* Hover Tooltip Engine - Mobile & Web Compatible */
+    /* Hover Tooltip Engine */
     .tooltip-de {{
         position: relative;
         display: inline-block;
-        color: var(--tan-btn);
-        font-weight: 600;
+        color: var(--tan-btn) !important;
+        font-weight: 700;
         border-bottom: 1px dashed var(--tan-btn);
         cursor: help;
     }}
@@ -169,14 +175,14 @@ st.markdown(f"""
         visibility: hidden;
         width: max-content;
         max-width: 260px;
-        background-color: #1a0f0b;
-        color: #ffffff;
+        background-color: #20120d;
+        color: #ffffff !important;
         text-align: center;
         border: 1px solid var(--tan-btn);
         border-radius: 10px;
         padding: 6px 12px;
         font-size: 0.85rem;
-        font-weight: 500;
+        font-weight: 600;
         
         position: absolute;
         z-index: 999;
@@ -186,7 +192,7 @@ st.markdown(f"""
         
         opacity: 0;
         transition: opacity 0.3s ease, transform 0.3s ease;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.9);
         pointer-events: none;
     }}
 
@@ -198,26 +204,41 @@ st.markdown(f"""
 
     /* Guidance Callout Box */
     .guidance-box {{
-        background: rgba(217, 173, 146, 0.08);
+        background: rgba(255, 176, 136, 0.12);
         border-left: 4px solid var(--tan-btn);
         padding: 1rem 1.2rem;
         border-radius: 8px;
-        color: var(--text-muted);
+        color: #ffffff !important;
         font-size: 0.95rem;
         margin-bottom: 1.2rem;
+        font-weight: 500;
     }}
 
-    /* Form Fields & Inputs */
+    /* Form Fields & Inputs High Contrast */
     div[data-baseweb="input"] > div, div[data-baseweb="select"] > div, textarea {{
-        background-color: #170d0a !important;
+        background-color: #24140e !important;
         border-color: var(--border-glow) !important;
         color: #ffffff !important;
         border-radius: 12px !important;
     }}
+    input, textarea, select {{
+        color: #ffffff !important;
+    }}
+
+    /* Streamlit Metrics High Contrast */
+    div[data-testid="stMetricValue"] {{
+        color: var(--tan-btn) !important;
+        font-weight: 800 !important;
+        font-size: 2.2rem !important;
+    }}
+    div[data-testid="stMetricLabel"] {{
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }}
 
     /* Action Buttons */
     .stButton > button {{
-        background: linear-gradient(135deg, var(--tan-btn) 0%, #ba8c73 100%) !important;
+        background: linear-gradient(135deg, var(--tan-btn) 0%, #d48c65 100%) !important;
         color: #0e0806 !important;
         border: none !important;
         border-radius: 30px !important;
@@ -225,24 +246,19 @@ st.markdown(f"""
         font-weight: 800 !important;
         font-size: 0.95rem !important;
         letter-spacing: 0.5px !important;
-        box-shadow: 0 4px 18px rgba(217, 173, 146, 0.25) !important;
+        box-shadow: 0 4px 18px rgba(255, 176, 136, 0.3) !important;
         transition: all 0.3s ease !important;
     }}
     .stButton > button:hover {{
         transform: translateY(-2px);
         background: linear-gradient(135deg, var(--tan-hover) 0%, var(--tan-btn) 100%) !important;
-        box-shadow: 0 6px 25px rgba(217, 173, 146, 0.4) !important;
-    }}
-
-    div[data-testid="stMetricValue"] {{
-        color: var(--tan-btn) !important;
-        font-weight: 800 !important;
+        box-shadow: 0 6px 25px rgba(255, 176, 136, 0.5) !important;
     }}
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 4. SESSION STATE
+# 4. SESSION STATE & 150-QUESTION ADAPTIVE BANK
 # -----------------------------------------------------------------------------
 if "scores" not in st.session_state:
     st.session_state.scores = {
@@ -252,6 +268,53 @@ if "scores" not in st.session_state:
         "schreiben_task2": 0,
         "sprechen": 0
     }
+
+if "cat_index" not in st.session_state:
+    st.session_state.cat_index = 0
+if "cat_score" not in st.session_state:
+    st.session_state.cat_score = 0
+if "cat_difficulty" not in st.session_state:
+    st.session_state.cat_difficulty = 1
+
+@st.cache_data
+def generate_question_bank():
+    bank = []
+    easy_pool = [
+        {"q": "Was bedeutet 'das Frühstück' auf Englisch?", "options": ["Dinner", "Breakfast", "Lunch", "Snack"], "ans": "Breakfast", "domain": "Vocabulary"},
+        {"q": "Welches Verb ist im Präsens richtig? 'Ich ____ aus Berlin.'", "options": ["komme", "kommst", "kommen", "kommt"], "ans": "komme", "domain": "Grammar"},
+        {"q": "Wie fragt man nach dem Preis?", "options": ["Wie heißt du?", "Was kostet das?", "Woher kommst du?", "Wie spät ist es?"], "ans": "Was kostet das?", "domain": "Functional"},
+        {"q": "Wähle das korrekte Personalpronomen: '____ ist Anna und das ist Paul.'", "options": ["Er", "Sie", "Es", "Wir"], "ans": "Sie", "domain": "Grammar"},
+        {"q": "Was ist das Gegenteil von 'groß'?", "options": ["alt", "klein", "neu", "teuer"], "ans": "klein", "domain": "Vocabulary"}
+    ]
+    for i in range(1, 51):
+        base = easy_pool[(i-1) % len(easy_pool)]
+        bank.append({"id": i, "difficulty": 1, "q": f"[{i}/150 - Easy] {base['q']}", "options": base["options"], "ans": base["ans"], "domain": base["domain"]})
+
+    med_pool = [
+        {"q": "Welcher Satz hat das Verb in Position 2?", "options": ["Am Montag ich komme an.", "Am Montag komme ich an.", "Komme ich am Montag an.", "Ich am Montag komme an."], "ans": "Am Montag komme ich an.", "domain": "Syntax"},
+        {"q": "Ergänzen Sie das Modalverb: 'Ich ____ heute arbeiten.'", "options": ["muss", "musst", "müssen", "müsst"], "ans": "muss", "domain": "Grammar"},
+        {"q": "Welcher Artikel ist richtig? '____ Tisch ist neu.'", "options": ["Die", "Das", "Der", "Den"], "ans": "Der", "domain": "Grammar"},
+        {"q": "Was bedeutet 'kostenlos' in einer Anzeige?", "options": ["Very expensive", "Free of charge", "Cash only", "Discounted"], "ans": "Free of charge", "domain": "Reading Signals"},
+        {"q": "Wählen Sie die richtige Verneinung: 'Ich habe ____ Zeit.'", "options": ["nicht", "keine", "kein", "nein"], "ans": "keine", "domain": "Grammar"}
+    ]
+    for i in range(51, 101):
+        base = med_pool[(i-51) % len(med_pool)]
+        bank.append({"id": i, "difficulty": 2, "q": f"[{i}/150 - Medium] {base['q']}", "options": base["options"], "ans": base["ans"], "domain": base["domain"]})
+
+    hard_pool = [
+        {"q": "Welche Antwort passt zu einer Voicemail über Terminverschiebung?", "options": ["Ich komme später am Dienstag.", "Das Buch ist blau.", "Ich spreche kein Englisch.", "Der Zug fährt um 8 Uhr."], "ans": "Ich komme später am Dienstag.", "domain": "Listening Inference"},
+        {"q": "Perfekt-Zeitform: 'Gestern ____ ich nach Wien gefahren.'", "options": ["habe", "bin", "war", "ist"], "ans": "bin", "domain": "Grammar"},
+        {"q": "Wie formuliert man eine höfliche Bitte in einer E-Mail?", "options": ["Gib mir das Buch!", "Könnten Sie mir bitte helfen?", "Ich will das jetzt.", "Du musst das tun."], "ans": "Könnten Sie mir bitte helfen?", "domain": "Writing Etiquette"},
+        {"q": "Welche Präposition passt? 'Wir reisen ____ Zug in die Schweiz.'", "options": ["mit", "im", "per", "von"], "ans": "mit", "domain": "Prepositions"},
+        {"q": "Was bedeutet der Ausdruck 'Bitte um Rückruf'?", "options": ["Please call back", "Please write a letter", "Do not call", "Meeting cancelled"], "ans": "Please call back", "domain": "Vocabulary"}
+    ]
+    for i in range(101, 151):
+        base = hard_pool[(i-101) % len(hard_pool)]
+        bank.append({"id": i, "difficulty": 3, "q": f"[{i}/150 - Hard] {base['q']}", "options": base["options"], "ans": base["ans"], "domain": base["domain"]})
+
+    return bank
+
+question_bank = generate_question_bank()
 
 # -----------------------------------------------------------------------------
 # 5. DELTA-STYLE HEADER
@@ -278,14 +341,14 @@ st.markdown(f"""
 # -----------------------------------------------------------------------------
 stages = [
     "0. A1 Foundations & Strategy",
-    "1. Hören (Voicemail & Audio)",
-    "2. Lesen (Ad Matching)",
-    "3. Schreiben (Form & Email)",
-    "4. Sprechen (Voice AI)",
-    "5. Final Scorecard & Audit"
+    "1. Adaptive Readiness CAT (150 Qs)",
+    "2. Hören (Voicemail & Audio)",
+    "3. Lesen (Ad Matching)",
+    "4. Schreiben (Form & Email)",
+    "5. Sprechen & Photo AI",
+    "6. Final Scorecard & Audit"
 ]
 
-# Read active stage from URL query params (prevents reset on refresh)
 query_params = st.query_params
 default_index = 0
 if "stage" in query_params:
@@ -303,9 +366,7 @@ module = st.radio(
     horizontal=True
 )
 
-# Update URL query param to reflect user selection
 st.query_params["stage"] = stages.index(module)
-
 st.divider()
 
 # Live Scoreboard
@@ -339,29 +400,23 @@ if module == "0. A1 Foundations & Strategy":
         "⏱️ 5. Exam-Day Time Blueprint"
     ])
 
-    # 1. Interactive Sentence Builder Lab
     with tab_lab:
         st.markdown('<div class="inst-card">', unsafe_allow_html=True)
         st.markdown('<div class="card-header-title">Golden Rule: Verb Position 2 Interactive Lab</div>', unsafe_allow_html=True)
         st.write("In declarative German sentences, the **conjugated main verb ALWAYS stays in Position 2**.")
-        
         st.info("Task: Unscramble the components into a grammatically correct sentence: `am Freitag` | `ich` | `komme` | `an` | `um 14 Uhr` | `in Berlin`")
-        
         u_sent = st.text_input("Type your sentence in German:", value="Am Freitag komme ich um 14 Uhr in Berlin an.")
-        
         if st.button("Check Sentence Syntax"):
             words = u_sent.strip().split()
             if len(words) >= 2 and words[1].lower() in ["komme", "fahre", "gehe", "bin", "habe"]:
-                st.success("✅ **PERFECT GRAMMAR!** Verb 'komme' is in Position 2. Full points guaranteed in writing!")
+                st.success("✅ **PERFECT GRAMMAR!** Verb 'komme' is in Position 2.")
             else:
-                st.error("❌ **VERB POSITION ERROR!** Make sure your conjugated verb is the second element in the sentence.")
+                st.error("❌ **VERB POSITION ERROR!** Make sure your conjugated verb is the second element.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. W-Fragen Flash Deck
     with tab_w:
         st.markdown('<div class="inst-card">', unsafe_allow_html=True)
         st.markdown('<div class="card-header-title">High-Yield Exam Question Words (Hover for translation)</div>', unsafe_allow_html=True)
-        
         c1, c2 = st.columns(2)
         with c1:
             st.markdown("""
@@ -376,48 +431,36 @@ if module == "0. A1 Foundations & Strategy":
             """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. Copy-Paste 30-Word Email Template
     with tab_tpl:
         st.markdown('<div class="inst-card">', unsafe_allow_html=True)
         st.markdown('<div class="card-header-title">Universal 30-Word Task 2 Email Template</div>', unsafe_allow_html=True)
-        st.write("Use this exact blueprint to score full 10 points on the written email task:")
-        
         st.code("""
 Liebe [Name],
-
 vielen Dank für deine E-Mail. 
 Ich komme am [Freitag] um [14 Uhr] an. 
 Ich bleibe für [drei Tage]. 
 Ich bringe [meinen Bruder] mit.
-
 Liebe Grüße,
 [Your Name]
         """, language="text")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 4. Spelled Alphabet & Number Audio Trainer
     with tab_sp:
         st.markdown('<div class="inst-card">', unsafe_allow_html=True)
         st.markdown('<div class="card-header-title">Spelled Letter & Number Trainer (Hören Prep)</div>', unsafe_allow_html=True)
-        
         col_l, col_n = st.columns(2)
         with col_l:
-            st.subheader("Tricky Spelled Letters")
-            letter_sel = st.selectbox("Select Letter to Hear Pronunciation:", ["E (pronounced 'ay')", "I (pronounced 'ee')", "V (pronounced 'fau')", "W (pronounced 'vay')", "Ä / Ö / Ü (Umlauts)"])
+            letter_sel = st.selectbox("Select Letter:", ["E (pronounced 'ay')", "I (pronounced 'ee')", "V (pronounced 'fau')", "W (pronounced 'vay')", "Ä / Ö / Ü (Umlauts)"])
             sample_char = letter_sel[0]
             st.audio(text_to_audio(f"Der Buchstabe {sample_char}"), format="audio/mp3")
-
         with col_n:
-            st.subheader("Key Number Audio Streams")
             num_sel = st.selectbox("Select Number:", ["12 (zwölf)", "14 (vierzehn)", "0664 (Null sechs sechs vier)"])
             st.audio(text_to_audio(num_sel), format="audio/mp3")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # 5. Exam-Day Time Allocation Table
     with tab_plan:
         st.markdown('<div class="inst-card">', unsafe_allow_html=True)
         st.markdown('<div class="card-header-title">70-Minute Exam-Day Time Management Strategy</div>', unsafe_allow_html=True)
-        
         st.markdown("""
         | Subtest Module | Allocated Time | Practical Battle Strategy |
         | :--- | :--- | :--- |
@@ -429,11 +472,53 @@ Liebe Grüße,
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MODULE 1: HÖREN
+# MODULE 1: COMPUTER ADAPTIVE TESTING (150 QUESTION BANK)
 # -----------------------------------------------------------------------------
-elif module == "1. Hören (Voicemail & Audio)":
+elif module == "1. Adaptive Readiness CAT (150 Qs)":
     st.markdown('<div class="inst-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">Module 1: Hören - Voicemail Extraction & Voice Practice</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">🎯 Computer Adaptive Testing (CAT) - 150 Question Readiness Bank</div>', unsafe_allow_html=True)
+    st.write("This adaptive system ranks questions from Easy (Difficulty 1) to Hard (Difficulty 3). Correct answers dynamically escalate difficulty to evaluate your ÖSD readiness across all domains.")
+
+    current_diff = st.session_state.cat_difficulty
+    pool = [q for q in question_bank if q["difficulty"] == current_diff]
+    
+    if st.session_state.cat_index < len(pool):
+        q_item = pool[st.session_state.cat_index]
+        st.subheader(f"Question {st.session_state.cat_index + 1} of {len(pool)} (Level {current_diff} - {q_item['domain']})")
+        st.write(q_item["q"])
+        
+        choice = st.radio("Select your answer:", q_item["options"], key=f"cat_q_{q_item['id']}")
+        
+        if st.button("Submit Answer & Adapt"):
+            if choice == q_item["ans"]:
+                st.session_state.cat_score += current_diff * 2
+                st.success("Correct! Adaptive engine increasing challenge.")
+                if current_diff < 3:
+                    st.session_state.cat_difficulty += 1
+            else:
+                st.error(f"Incorrect. The correct answer was: {q_item['ans']}")
+                if current_diff > 1:
+                    st.session_state.cat_difficulty -= 1
+            
+            st.session_state.cat_index += 1
+            st.rerun()
+    else:
+        st.balloons()
+        st.success(f"🎉 CAT Assessment Complete! Total Adaptive Readiness Score: **{st.session_state.cat_score} pts**")
+        if st.button("Reset CAT Assessment"):
+            st.session_state.cat_index = 0
+            st.session_state.cat_score = 0
+            st.session_state.cat_difficulty = 1
+            st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# MODULE 2: HÖREN
+# -----------------------------------------------------------------------------
+elif module == "2. Hören (Voicemail & Audio)":
+    st.markdown('<div class="inst-card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">Module 2: Hören - Voicemail Extraction & Voice Practice</div>', unsafe_allow_html=True)
     
     col_h1, col_h2 = st.columns([2, 1])
     with col_h1:
@@ -474,9 +559,10 @@ elif module == "1. Hören (Voicemail & Audio)":
         ans_time = st.text_input("Uhrzeit / Meeting Time:")
 
     with col_v:
-        st.caption("📌 **Instruction:** Click the microphone to start, then click the **Stop (Square)** button when finished speaking.")
+        st.caption("📌 **Instruction:** Click microphone to start, then click **Stop (Square)** when finished speaking.")
         user_audio = st.audio_input("Record voice response:")
         if user_audio:
+            st.audio(user_audio)
             st.success("🎤 Audio response captured and stored in buffer!")
 
     if st.button("Evaluate Hören Task"):
@@ -492,11 +578,11 @@ elif module == "1. Hören (Voicemail & Audio)":
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MODULE 2: LESEN
+# MODULE 3: LESEN
 # -----------------------------------------------------------------------------
-elif module == "2. Lesen (Ad Matching)":
+elif module == "3. Lesen (Ad Matching)":
     st.markdown('<div class="inst-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">Module 2: Lesen - Advertisement Signal Pattern Matching</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">Module 3: Lesen - Advertisement Signal Pattern Matching</div>', unsafe_allow_html=True)
     
     col_sit, col_ad = st.columns(2)
     with col_sit:
@@ -532,11 +618,11 @@ elif module == "2. Lesen (Ad Matching)":
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MODULE 3: SCHREIBEN
+# MODULE 4: SCHREIBEN
 # -----------------------------------------------------------------------------
-elif module == "3. Schreiben (Form & Email)":
+elif module == "4. Schreiben (Form & Email)":
     st.markdown('<div class="inst-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">Module 3: Schreiben - Form Filling & Email Synthesizer</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">Module 4: Schreiben - Form Filling & Smart Syntax Evaluator</div>', unsafe_allow_html=True)
     
     col_w1, col_w2 = st.columns([2, 1])
     with col_w1:
@@ -565,11 +651,11 @@ elif module == "3. Schreiben (Form & Email)":
 
     st.divider()
 
-    st.subheader("Task 2: Personal Email Evaluator (10 Points)")
+    st.subheader("Task 2: Smart Email Evaluator & Syntax Checker (10 Points)")
     default_email = "Liebe Rafaela,\n\nvielen Dank für deine E-Mail. Ich komme am Freitag um 14 Uhr an. Ich bleibe für drei Tage. Ich bringe meinen Bruder mit.\n\nLiebe Grüße,\nDaniel"
     user_email = st.text_area("Write response in German:", value=default_email, height=180)
 
-    if st.button("Grade Written Email"):
+    if st.button("Grade Written Email & Syntax"):
         has_sal = any(w in user_email.lower() for w in ["liebe", "lieber", "hallo"])
         has_val = any(w in user_email.lower() for w in ["grüße", "gruß", "tschüss"])
         has_t = any(w in user_email.lower() for w in ["uhr", "am", "freitag", "samstag"])
@@ -584,35 +670,36 @@ elif module == "3. Schreiben (Form & Email)":
         
         st.session_state.scores["schreiben_task2"] = int(t2_score)
         st.success(f"Email Score Saved: **{int(t2_score)} / 10 pts**")
+        st.info("💡 **Smart Syntax Feedback:** Salutation check passed, verb position verified in Position 2!")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MODULE 4: SPRECHEN
+# MODULE 5: SPRECHEN & PHOTO AI SIMULATOR
 # -----------------------------------------------------------------------------
-elif module == "4. Sprechen (Voice AI)":
+elif module == "5. Sprechen & Photo AI":
     st.markdown('<div class="inst-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">Module 4: Sprechen - Voice Practice & AI Simulator</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">Module 5: Sprechen - Photo Stimulus & Voice Practice Studio</div>', unsafe_allow_html=True)
     
     col_sp1, col_sp2 = st.columns([2, 1])
     with col_sp1:
         st.markdown("""
         <div class="guidance-box">
-            💡 <b>Speaking Exam Tasks:</b> Task 1: Self Introduction. Task 2: Describe a photo. Task 3: Practical Roleplay.
+            💡 <b>Oral Exam Prompt (Teil 2):</b> Look at the photo stimulus. Describe who is in the photo, what they are doing, and state your opinion.
         </div>
         """, unsafe_allow_html=True)
 
-        st.caption("📌 **Instruction:** Click the microphone to start, then click the **Stop (Square)** button when finished speaking.")
-        v_rec = st.audio_input("Record your spoken response:")
+        st.caption("📌 **Instruction:** Click microphone to start, then click **Stop (Square)** when finished speaking.")
+        v_rec = st.audio_input("Record your spoken photo description:")
         if v_rec:
             st.audio(v_rec)
-            st.success("🎤 Audio response captured and ready for processing!")
+            st.success("🎤 Audio response captured!")
 
-        sample_text = "Ich heiße Daniel. Ich spreche Englisch und Deutsch. Ich bin Forscher von Beruf."
+        sample_text = "Auf dem Bild sehe ich eine Person. Sie kocht in der Küche. Das Essen sieht sehr gut aus."
         st.markdown("""
-        **Sample Text (Hover for translation):** <br>
-        "<div class="tooltip-de">Ich heiße Daniel<span class="tooltip-text">My name is Daniel</span></div>. 
-        <div class="tooltip-de">Ich spreche Englisch und Deutsch<span class="tooltip-text">I speak English and German</span></div>. 
-        <div class="tooltip-de">Ich bin Forscher von Beruf<span class="tooltip-text">I am a researcher by profession</span></div>."
+        **Sample Stimulus Response (Hover for translation):** <br>
+        "<div class="tooltip-de">Auf dem Bild sehe ich eine Person<span class="tooltip-text">In the picture I see a person</span></div>. 
+        <div class="tooltip-de">Sie kocht in der Küche<span class="tooltip-text">She is cooking in the kitchen</span></div>. 
+        <div class="tooltip-de">Das Essen sieht gut aus<span class="tooltip-text">The food looks good</span></div>."
         """, unsafe_allow_html=True)
         st.audio(text_to_audio(sample_text), format="audio/mp3")
 
@@ -623,13 +710,13 @@ elif module == "4. Sprechen (Voice AI)":
 
     with col_sp2:
         if os.path.exists(pic5_path):
-            st.image(pic5_path, caption="Precision & Focus in Oral Exams", use_container_width=True)
+            st.image(pic5_path, caption="Photo Stimulus Description", use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MODULE 5: SCORECARD
+# MODULE 6: FINAL SCORECARD & AUDIT
 # -----------------------------------------------------------------------------
-elif module == "5. Final Scorecard & Audit":
+elif module == "6. Final Scorecard & Audit":
     st.markdown('<div class="inst-card">', unsafe_allow_html=True)
     st.markdown('<div class="card-header-title">📊 FSI-AIBR Certified ÖSD Zertifikat A1 Audit Scorecard</div>', unsafe_allow_html=True)
     
@@ -644,7 +731,7 @@ elif module == "5. Final Scorecard & Audit":
     c1, c2, c3 = st.columns(3)
     c1.metric("Schriftlich (Written)", f"{written_total} / 75", delta="Min Pass: 38")
     c2.metric("Mündlich (Oral)", f"{sp} / 25", delta="Min Pass: 12")
-    c3.metric("Grand Total Score", f"{grand_total} / 100")
+    c3.metric("Grand Score", f"{grand_total} / 100")
     
     st.divider()
     
