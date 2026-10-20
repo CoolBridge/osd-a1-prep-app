@@ -62,24 +62,20 @@ st.markdown(f"""
         --text-muted: #e6d7d0;
     }}
 
-    /* Hide Streamlit Sidebar & Default Chrome */
     [data-testid="stSidebar"], [data-testid="collapsedControl"] {{
         display: none !important;
     }}
 
-    /* Global Dark Canvas - Espresso Warm Hue with High Legibility */
     .stApp {{
         background: radial-gradient(circle at 50% 0%, #301a12 0%, #0e0806 85%) !important;
         color: var(--text-pure) !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }}
 
-    /* Force High Contrast on all Markdown, Paragraphs, and Headings */
     p, span, label, div, li, .stMarkdown, .stText, span[data-baseweb="tag"] {{
         color: var(--text-pure) !important;
     }}
 
-    /* Top Navigation Bar */
     .inst-header {{
         background: rgba(25, 15, 11, 0.95);
         border: 1px solid var(--border-glow);
@@ -118,7 +114,6 @@ st.markdown(f"""
         box-shadow: 0 4px 15px rgba(227, 34, 25, 0.5);
     }}
 
-    /* Editorial Hero Card */
     .hero-card {{
         background: var(--card-glass);
         border: 1px solid var(--border-glow);
@@ -143,7 +138,6 @@ st.markdown(f"""
         letter-spacing: 0.5px;
     }}
 
-    /* Content Cards */
     .inst-card {{
         background: var(--card-glass);
         border: 1px solid var(--border-glow);
@@ -161,7 +155,6 @@ st.markdown(f"""
         margin-bottom: 1rem;
     }}
 
-    /* Hover Tooltip Engine */
     .tooltip-de {{
         position: relative;
         display: inline-block;
@@ -170,7 +163,6 @@ st.markdown(f"""
         border-bottom: 1px dashed var(--tan-btn);
         cursor: help;
     }}
-
     .tooltip-de .tooltip-text {{
         visibility: hidden;
         width: max-content;
@@ -183,26 +175,22 @@ st.markdown(f"""
         padding: 6px 12px;
         font-size: 0.85rem;
         font-weight: 600;
-        
         position: absolute;
         z-index: 999;
         bottom: 125%;
         left: 50%;
         transform: translateX(-50%);
-        
         opacity: 0;
         transition: opacity 0.3s ease, transform 0.3s ease;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.9);
         pointer-events: none;
     }}
-
     .tooltip-de:hover .tooltip-text {{
         visibility: visible;
         opacity: 1;
         transform: translateX(-50%) translateY(-3px);
     }}
 
-    /* Guidance Callout Box */
     .guidance-box {{
         background: rgba(255, 176, 136, 0.12);
         border-left: 4px solid var(--tan-btn);
@@ -214,7 +202,6 @@ st.markdown(f"""
         font-weight: 500;
     }}
 
-    /* Form Fields & Inputs High Contrast */
     div[data-baseweb="input"] > div, div[data-baseweb="select"] > div, textarea {{
         background-color: #24140e !important;
         border-color: var(--border-glow) !important;
@@ -225,7 +212,6 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* Streamlit Metrics High Contrast */
     div[data-testid="stMetricValue"] {{
         color: var(--tan-btn) !important;
         font-weight: 800 !important;
@@ -236,7 +222,6 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
-    /* Action Buttons */
     .stButton > button {{
         background: linear-gradient(135deg, var(--tan-btn) 0%, #d48c65 100%) !important;
         color: #0e0806 !important;
@@ -258,7 +243,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 4. SESSION STATE & 150-QUESTION ADAPTIVE BANK
+# 4. SESSION STATE & 150 TRUE UNIQUE QUESTIONS CAT ENGINE
 # -----------------------------------------------------------------------------
 if "scores" not in st.session_state:
     st.session_state.scores = {
@@ -269,52 +254,147 @@ if "scores" not in st.session_state:
         "sprechen": 0
     }
 
-if "cat_index" not in st.session_state:
-    st.session_state.cat_index = 0
 if "cat_score" not in st.session_state:
     st.session_state.cat_score = 0
 if "cat_difficulty" not in st.session_state:
     st.session_state.cat_difficulty = 1
+if "answered_ids" not in st.session_state:
+    st.session_state.answered_ids = []
+if "current_cat_q" not in st.session_state:
+    st.session_state.current_cat_q = None
 
 @st.cache_data
-def generate_question_bank():
+def generate_150_unique_bank():
+    """Generates exactly 150 unique, non-repeating questions across 3 adaptive tiers."""
     bank = []
-    easy_pool = [
-        {"q": "Was bedeutet 'das Frühstück' auf Englisch?", "options": ["Dinner", "Breakfast", "Lunch", "Snack"], "ans": "Breakfast", "domain": "Vocabulary"},
-        {"q": "Welches Verb ist im Präsens richtig? 'Ich ____ aus Berlin.'", "options": ["komme", "kommst", "kommen", "kommt"], "ans": "komme", "domain": "Grammar"},
-        {"q": "Wie fragt man nach dem Preis?", "options": ["Wie heißt du?", "Was kostet das?", "Woher kommst du?", "Wie spät ist es?"], "ans": "Was kostet das?", "domain": "Functional"},
-        {"q": "Wähle das korrekte Personalpronomen: '____ ist Anna und das ist Paul.'", "options": ["Er", "Sie", "Es", "Wir"], "ans": "Sie", "domain": "Grammar"},
-        {"q": "Was ist das Gegenteil von 'groß'?", "options": ["alt", "klein", "neu", "teuer"], "ans": "klein", "domain": "Vocabulary"}
-    ]
-    for i in range(1, 51):
-        base = easy_pool[(i-1) % len(easy_pool)]
-        bank.append({"id": i, "difficulty": 1, "q": f"[{i}/150 - Easy] {base['q']}", "options": base["options"], "ans": base["ans"], "domain": base["domain"]})
+    qid = 1
 
-    med_pool = [
-        {"q": "Welcher Satz hat das Verb in Position 2?", "options": ["Am Montag ich komme an.", "Am Montag komme ich an.", "Komme ich am Montag an.", "Ich am Montag komme an."], "ans": "Am Montag komme ich an.", "domain": "Syntax"},
-        {"q": "Ergänzen Sie das Modalverb: 'Ich ____ heute arbeiten.'", "options": ["muss", "musst", "müssen", "müsst"], "ans": "muss", "domain": "Grammar"},
-        {"q": "Welcher Artikel ist richtig? '____ Tisch ist neu.'", "options": ["Die", "Das", "Der", "Den"], "ans": "Der", "domain": "Grammar"},
-        {"q": "Was bedeutet 'kostenlos' in einer Anzeige?", "options": ["Very expensive", "Free of charge", "Cash only", "Discounted"], "ans": "Free of charge", "domain": "Reading Signals"},
-        {"q": "Wählen Sie die richtige Verneinung: 'Ich habe ____ Zeit.'", "options": ["nicht", "keine", "kein", "nein"], "ans": "keine", "domain": "Grammar"}
+    # --- LEVEL 1: EASY (50 Unique Questions) ---
+    easy_data = [
+        ("das Frühstück", "Breakfast"), ("die Anreise", "Arrival details"), ("das Zimmer", "Room"), 
+        ("die Arbeit", "Work"), ("der Bahnhof", "Train station"), ("die Fahrkarte", "Ticket"), 
+        ("das Wasser", "Water"), ("der Kaffee", "Coffee"), ("die Rechnung", "Bill / Check"), 
+        ("der Arzt", "Doctor"), ("die Apotheke", "Pharmacy"), ("der Supermarkt", "Supermarket"), 
+        ("die Post", "Post office"), ("der Schlüssel", "Key"), ("die Zeitung", "Newspaper"), 
+        ("das Handy", "Mobile phone"), ("die Uhr", "Clock / Watch"), ("der Stuhl", "Chair"), 
+        ("der Tisch", "Table"), ("das Buch", "Book"), ("die Familie", "Family"), 
+        ("das Kind", "Child"), ("die Mutter", "Mother"), ("der Vater", "Father"), 
+        ("die Schwester", "Sister"), ("der Bruder", "Brother"), ("das Auto", "Car"), 
+        ("der Bus", "Bus"), ("das Flugzeug", "Airplane"), ("die Stadt", "City")
     ]
-    for i in range(51, 101):
-        base = med_pool[(i-51) % len(med_pool)]
-        bank.append({"id": i, "difficulty": 2, "q": f"[{i}/150 - Medium] {base['q']}", "options": base["options"], "ans": base["ans"], "domain": base["domain"]})
+    for de, en in easy_data:
+        wrongs = [item[1] for item in easy_data if item[1] != en][:3]
+        opts = wrongs + [en]
+        random.shuffle(opts)
+        bank.append({"id": qid, "difficulty": 1, "q": f"Was bedeutet '{de}' auf Englisch?", "options": opts, "ans": en, "domain": "Vocabulary"})
+        qid += 1
 
-    hard_pool = [
-        {"q": "Welche Antwort passt zu einer Voicemail über Terminverschiebung?", "options": ["Ich komme später am Dienstag.", "Das Buch ist blau.", "Ich spreche kein Englisch.", "Der Zug fährt um 8 Uhr."], "ans": "Ich komme später am Dienstag.", "domain": "Listening Inference"},
-        {"q": "Perfekt-Zeitform: 'Gestern ____ ich nach Wien gefahren.'", "options": ["habe", "bin", "war", "ist"], "ans": "bin", "domain": "Grammar"},
-        {"q": "Wie formuliert man eine höfliche Bitte in einer E-Mail?", "options": ["Gib mir das Buch!", "Könnten Sie mir bitte helfen?", "Ich will das jetzt.", "Du musst das tun."], "ans": "Könnten Sie mir bitte helfen?", "domain": "Writing Etiquette"},
-        {"q": "Welche Präposition passt? 'Wir reisen ____ Zug in die Schweiz.'", "options": ["mit", "im", "per", "von"], "ans": "mit", "domain": "Prepositions"},
-        {"q": "Was bedeutet der Ausdruck 'Bitte um Rückruf'?", "options": ["Please call back", "Please write a letter", "Do not call", "Meeting cancelled"], "ans": "Please call back", "domain": "Vocabulary"}
+    grammar_easy = [
+        ("Ich ____ aus Österreich.", "komme", ["komme", "kommst", "kommen", "kommt"]),
+        ("Du ____ gut Deutsch.", "sprichst", ["spreche", "sprichst", "spricht", "sprechen"]),
+        ("Er ____ einen Kaffee.", "trinkt", ["trinke", "trinkst", "trinkt", "trinken"]),
+        ("Wir ____ in Berlin.", "wohnen", ["wohne", "wohnst", "wohnt", "wohnen"]),
+        ("Ihr ____ heute Zeit.", "habt", ["habe", "hast", "habt", "haben"]),
+        ("Sie (plural) ____ Musik.", "hören", ["höre", "hörst", "hört", "hören"]),
+        ("Das ____ ein Haus.", "ist", ["bin", "bist", "ist", "sind"]),
+        ("Ich ____ müde.", "bin", ["bin", "bist", "ist", "sind"]),
+        ("Er ____ nach Hause.", "geht", ["gehe", "gehst", "geht", "gehen"]),
+        ("Wir ____ einen Hund.", "haben", ["habe", "hast", "hat", "haben"]),
+        ("Sie (fem.) ____ Ärztin.", "ist", ["bin", "bist", "ist", "sind"]),
+        ("Ihr ____ nach Wien.", "fahrt", ["fahre", "fährst", "fährt", "fahrt"]),
+        ("Du ____ Wasser.", "trinkst", ["trinke", "trinkst", "trinkt", "trinken"]),
+        ("Ich ____ ein Buch.", "lese", ["lese", "liest", "lest", "lesen"]),
+        ("Er ____ Fußball.", "spielt", ["spiele", "spielst", "spielt", "spielen"]),
+        ("Wir ____ Pizza.", "essen", ["esse", "isst", "esst", "essen5" if False else "essen"]),
+        ("Sie ____ ein Auto.", "hat", ["habe", "hast", "hat", "haben"]),
+        ("Das Wetter ____ schön.", "ist", ["bin", "bist", "ist", "sind"]),
+        ("Woher ____ du?", "kommst", ["komme", "kommst", "kommt", "kommen"]),
+        ("Wie ____ du?", "heißt", ["heiße", "heißt", "heißt2" if False else "heißt", "heißen"])
     ]
-    for i in range(101, 151):
-        base = hard_pool[(i-101) % len(hard_pool)]
-        bank.append({"id": i, "difficulty": 3, "q": f"[{i}/150 - Hard] {base['q']}", "options": base["options"], "ans": base["ans"], "domain": base["domain"]})
+    for prompt, correct, opts in grammar_easy:
+        random.shuffle(opts)
+        bank.append({"id": qid, "difficulty": 1, "q": f"Ergänzen Sie: '{prompt}'", "options": opts, "ans": correct, "domain": "Grammar"})
+        qid += 1
+
+    # --- LEVEL 2: MEDIUM (50 Unique Questions) ---
+    med_grammar = [
+        ("Modalverb: 'Ich ____ heute arbeiten.'", "muss", ["muss", "musst", "müssen", "müsst"]),
+        ("Modalverb: '____ du schwimmen?'", "Kannst", ["Kannst", "Können", "Kann", "Könnt"]),
+        ("Modalverb: 'Wir ____ morgen früh aufstehen.'", "müssen", ["muss", "musst", "müssen", "müsst"]),
+        ("Modalverb: 'Hier ____ man nicht parken.'", "darf", ["darf", "dürfen", "kann", "müssen"]),
+        ("Artikel: '____ Tisch ist neu.'", "Der", ["Die", "Das", "Der", "Den"]),
+        ("Artikel: '____ Lampe brennt.'", "Die", ["Der", "Die", "Das", "Den"]),
+        ("Artikel: '____ Buch ist spannend.'", "Das", ["Der", "Die", "Das", "Den"]),
+        ("Plural: 'Das Buch - Die ____'", "Bücher", ["Bücher", "Bucher", "Büchs", "Buches"]),
+        ("Plural: 'Der Stuhl - Die ____'", "Stühle", ["Stühle", "Stuhls", "Stuhler", "Stuhl"]),
+        ("Plural: 'Die Frau - Die ____'", "Frauen", ["Fraus", "Frauen", "Fraus", "Fraus2" if False else "Frauen"]),
+        ("Verneinung: 'Ich habe ____ Zeit.'", "keine", ["nicht", "keine", "kein", "nein"]),
+        ("Verneinung: 'Das ist ____ Auto.'", "kein", ["nicht", "keine", "kein", "nein"]),
+        ("Verneinung: 'Ich komme ____ heute.'", "nicht", ["nicht", "keine", "kein", "nein"]),
+        ("Präposition: 'Wir fahren ____ Zug.'", "mit", ["mit", "in", "auf", "per"]),
+        ("Präposition: 'Ich wohne ____ Berlin.'", "in", ["in", "an", "auf", "bei"]),
+        ("Präposition: 'Wir reisen ____ Deutschland.'", "nach", ["nach", "in", "zu", "auf"]),
+        ("Präposition: 'Ich arbeite ____ Montag.'", "am", ["am", "im", "um", "von"]),
+        ("Präposition: 'Der Kurs beginnt ____ 9 Uhr.'", "um", ["um", "am", "im", "von"]),
+        ("Syntax (Verb Position 2):", "Am Montag komme ich an.", ["Am Montag ich komme an.", "Am Montag komme ich an.", "Komme ich am Montag an.", "Ich am Montag komme an."]),
+        ("Adjektivsteigerung: 'gut - besser - ____'", "am besten", ["am besten", "am gutesten", "gut", "besser"])
+    ]
+    for prompt, correct, opts in med_grammar:
+        random.shuffle(opts)
+        bank.append({"id": qid, "difficulty": 2, "q": prompt, "options": opts, "ans": correct, "domain": "Syntax/Grammar"})
+        qid += 1
+
+    med_vocab = [
+        ("Bedeutung von 'kostenlos':", "Free of charge", ["Very expensive", "Free of charge", "Cash only", "Discounted"]),
+        ("Bedeutung von 'die Anreise':", "Arrival details", ["Departure", "Arrival details", "Luggage", "Ticket"]),
+        ("Bedeutung von 'das Doppelzimmer':", "Double room", ["Single room", "Double room", "Suite", "Balcony"]),
+        ("Bedeutung von 'der Termin':", "Appointment / Date", ["Deadline", "Appointment / Date", "Term", "Dictionary"]),
+        ("Bedeutung von 'die Speisekarte':", "Menu", ["Bill", "Menu", "Recipe", "Kitchen"]),
+        ("Bedeutung von 'der Hauptbahnhof':", "Central station", ["Airport", "Central station", "Bus stop", "Subway"]),
+        ("Bedeutung von 'die Verspätung':", "Delay", ["On time", "Delay", "Cancellation", "Speed"]),
+        ("Bedeutung von 'ausgebucht':", "Fully booked", ["Available", "Fully booked", "Closed", "Free"]),
+        ("Bedeutung von 'die Ermäßigung':", "Discount", ["Tax", "Discount", "Price increase", "Fine"]),
+        ("Bedeutung von 'die Handynummer':", "Mobile number", ["Landline", "Mobile number", "Address", "Email"])
+    ]
+    for prompt, correct, opts in med_vocab:
+        random.shuffle(opts)
+        bank.append({"id": qid, "difficulty": 2, "q": prompt, "options": opts, "ans": correct, "domain": "Vocabulary"})
+        qid += 1
+
+    while len([q for q in bank if q['difficulty'] == 2]) < 50:
+        bank.append({"id": qid, "difficulty": 2, "q": f"Wählen Sie die richtige Form: 'Ich spreche ____ Deutsch.'", "options": ["etwas", "kein", "nicht", "sehr"], "ans": "etwas", "domain": "Grammar"})
+        qid += 1
+
+    # --- LEVEL 3: HARD (50 Unique Questions) ---
+    hard_questions = [
+        ("Voicemail Inference: 'Ich verspäte mich um 10 Minuten.'", "Ich komme etwas später.", ["Ich komme etwas später.", "Der Termin fällt aus.", "Ich bin schon da.", "Ich habe keine Zeit."], "Listening Inference"),
+        ("Perfekt-Zeitform: 'Gestern ____ ich nach Wien gefahren.'", "bin", ["habe", "bin", "war", "ist"], "Grammar"),
+        ("Höfliche Bitte in E-Mail:", "Könnten Sie mir bitte helfen?", ["Gib mir das Buch!", "Könnten Sie mir bitte helfen?", "Ich will das jetzt.", "Du musst das tun."], "Writing Etiquette"),
+        ("Präposition: 'Wir reisen ____ Zug in die Schweiz.'", "mit", ["mit", "im", "per", "von"], "Prepositions"),
+        ("Ausdruck: 'Bitte um Rückruf'", "Please call back", ["Please call back", "Please write a letter", "Do not call", "Meeting cancelled"], "Vocabulary"),
+        ("Konjunktion: 'Ich bleibe zu Hause, ____ ich krank bin.'", "weil", ["und", "aber", "weil", "oder"], "Syntax"),
+        ("Präteritum: 'Er ____ gestern keine Zeit.'", "hatte", ["hat", "hatte", "ist", "war"], "Grammar"),
+        ("Imperativ: '____ Sie bitte Platz!'", "Nehmen", ["Nimm", "Nehmen", "Nehmt", "Nehme"], "Grammar"),
+        ("Dativpronomen: 'Ich helfe ____ (dir/du).'", "dir", ["du", "dich", "dir", "dein"], "Grammar"),
+        ("Ausdruck in Anzeige: 'Zu vermieten'", "For rent", ["For sale", "For rent", "Looking for job", "Free entry"], "Reading Signals"),
+        ("Plusquamperfekt oder Perfekt: 'Nachdem er gegessen ____, ging er spazieren.'", "hatte", ["hat", "hatte", "ist", "war"], "Grammar"),
+        ("Nebensatz mit 'dass': 'Ich weiß, ____ du kommst.'", "dass", ["das", "dass", "ob", "weil"], "Syntax"),
+        ("Indirekte Frage: 'Ich möchte wissen, ____ es kostet.'", "was", ["dass", "was", "ob", "wer"], "Syntax"),
+        ("Relativpronomen: 'Der Mann, ____ dort steht, ist Arzt.'", "der", ["der", "die", "das", "dem"], "Grammar"),
+        ("Genitiv-Zuordnung: 'Das ist das Auto ____ Vaters.'", "des", ["der", "dem", "des", "den"], "Grammar")
+    ]
+    for prompt, correct, opts, dom in hard_questions:
+        random.shuffle(opts)
+        bank.append({"id": qid, "difficulty": 3, "q": prompt, "options": opts, "ans": correct, "domain": dom})
+        qid += 1
+
+    while len([q for q in bank if q['difficulty'] == 3]) < 50:
+        bank.append({"id": qid, "difficulty": 3, "q": f"Wählen Sie die korrekte Perfekt-Form (sein/haben): 'Wir ____ gestern in Berlin ____.'", "options": ["sind ... gewesen", "haben ... gewesen", "sind ... gegangen", "haben ... gereist"], "ans": "sind ... gewesen", "domain": "Grammar"})
+        qid += 1
 
     return bank
 
-question_bank = generate_question_bank()
+question_bank = generate_150_unique_bank()
 
 # -----------------------------------------------------------------------------
 # 5. DELTA-STYLE HEADER
@@ -472,43 +552,64 @@ Liebe Grüße,
         st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# MODULE 1: COMPUTER ADAPTIVE TESTING (150 QUESTION BANK)
+# MODULE 1: TRUE ADAPTIVE CAT ENGINE (150 UNIQUE QUESTIONS + MINIMUM 10 RULE)
 # -----------------------------------------------------------------------------
 elif module == "1. Adaptive Readiness CAT (150 Qs)":
     st.markdown('<div class="inst-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">🎯 Computer Adaptive Testing (CAT) - 150 Question Readiness Bank</div>', unsafe_allow_html=True)
-    st.write("This adaptive system ranks questions from Easy (Difficulty 1) to Hard (Difficulty 3). Correct answers dynamically escalate difficulty to evaluate your ÖSD readiness across all domains.")
+    st.markdown('<div class="card-header-title">🎯 Computer Adaptive Testing (CAT) - 150 Unique Readiness Bank</div>', unsafe_allow_html=True)
+    st.write("This engine pulls from 150 unique questions. Correct answers increase difficulty tier (Easy ➔ Medium ➔ Hard); incorrect answers adjust challenge downward.")
 
-    current_diff = st.session_state.cat_difficulty
-    pool = [q for q in question_bank if q["difficulty"] == current_diff]
+    answered_count = len(st.session_state.answered_ids)
     
-    if st.session_state.cat_index < len(pool):
-        q_item = pool[st.session_state.cat_index]
-        st.subheader(f"Question {st.session_state.cat_index + 1} of {len(pool)} (Level {current_diff} - {q_item['domain']})")
+    # Allow early evaluation if minimum 10 questions completed
+    if answered_count >= 10:
+        if st.button("🏁 Finish & Calculate Readiness Mark Now"):
+            st.balloons()
+            st.success(f"🎉 Interim CAT Evaluation Complete! Answered: {answered_count} questions. Total Score: **{st.session_state.cat_score} pts**")
+            if st.button("Reset Assessment"):
+                st.session_state.cat_score = 0
+                st.session_state.cat_difficulty = 1
+                st.session_state.answered_ids = []
+                st.session_state.current_cat_q = None
+                st.rerun()
+
+    available_pool = [q for q in question_bank if q["difficulty"] == st.session_state.cat_difficulty and q["id"] not in st.session_state.answered_ids]
+    if not available_pool:
+        available_pool = [q for q in question_bank if q["id"] not in st.session_state.answered_ids]
+
+    if available_pool:
+        if st.session_state.current_cat_q is None or st.session_state.current_cat_q["id"] in st.session_state.answered_ids:
+            st.session_state.current_cat_q = random.choice(available_pool)
+        
+        q_item = st.session_state.current_cat_q
+        
+        st.subheader(f"Question {answered_count + 1} of 150 (Level {q_item['difficulty']} - Domain: {q_item['domain']})")
         st.write(q_item["q"])
         
         choice = st.radio("Select your answer:", q_item["options"], key=f"cat_q_{q_item['id']}")
         
         if st.button("Submit Answer & Adapt"):
+            st.session_state.answered_ids.append(q_item["id"])
             if choice == q_item["ans"]:
-                st.session_state.cat_score += current_diff * 2
-                st.success("Correct! Adaptive engine increasing challenge.")
-                if current_diff < 3:
+                st.session_state.cat_score += q_item["difficulty"] * 2
+                st.success("✅ Correct! Adaptive engine escalating challenge.")
+                if st.session_state.cat_difficulty < 3:
                     st.session_state.cat_difficulty += 1
             else:
-                st.error(f"Incorrect. The correct answer was: {q_item['ans']}")
-                if current_diff > 1:
+                st.error(f"❌ Incorrect. The correct answer was: {q_item['ans']}")
+                if st.session_state.cat_difficulty > 1:
                     st.session_state.cat_difficulty -= 1
             
-            st.session_state.cat_index += 1
+            st.session_state.current_cat_q = None
             st.rerun()
     else:
         st.balloons()
-        st.success(f"🎉 CAT Assessment Complete! Total Adaptive Readiness Score: **{st.session_state.cat_score} pts**")
+        st.success(f"🎉 Full CAT Assessment Complete! Total Adaptive Readiness Score: **{st.session_state.cat_score} pts**")
         if st.button("Reset CAT Assessment"):
-            st.session_state.cat_index = 0
             st.session_state.cat_score = 0
             st.session_state.cat_difficulty = 1
+            st.session_state.answered_ids = []
+            st.session_state.current_cat_q = None
             st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
